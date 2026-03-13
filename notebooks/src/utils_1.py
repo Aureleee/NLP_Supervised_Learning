@@ -18,6 +18,8 @@ import re
 
 import pandas as pd
 
+import urllib.request as request
+
 
 EXPECTED_COLUMNS = [
     "note",
@@ -46,6 +48,19 @@ TEXT_COLUMNS = [
 
 DATE_COLUMNS = ["date_publication", "date_exp"]
 
+def ensure_data(data_dir, file_dir, url):
+    if not file_dir.exists():
+        print(f"Data not found at {file_dir}. Downloading from GitHub...")
+        
+        # Create directory if it doesn't exist
+        data_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            request.urlretrieve(url, file_dir)
+            print("Download successful!")
+        except Exception as e:
+            print(f"Failed to download data: {e}")
+    else:
+        print("Data found locally, skipping download.")
 
 def list_excel_files(folder: str | Path, pattern: str = "avis_*_traduit.xlsx") -> list[Path]:
     """Return all matching Excel files sorted by the numeric index in the filename."""
