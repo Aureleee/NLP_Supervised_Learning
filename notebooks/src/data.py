@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    utils_1.py                                         :+:      :+:    :+:    #
+#    data.py                                            :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: aurele <aurele@student.42.fr>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/03/08 21:16:01 by aurele            #+#    #+#              #
-#    Updated: 2026/03/08 21:16:03 by aurele           ###   ########.fr        #
+#    Updated: 2026/03/23 22:19:42 by aurele           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -111,13 +111,11 @@ def reorder_known_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_basic_text(value: object) -> object:
-    """Light text normalization without changing semantic content."""
     if pd.isna(value):
         return pd.NA
     text = str(value)
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-    text = re.sub(r"[ \t]+", " ", text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = text.replace("\r\n", " ").replace("\n", " ").replace("\r", " ")
+    text = re.sub(r"\s+", " ", text)
     return text.strip()
 
 
