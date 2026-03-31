@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsureNLP</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f7f7f8;--bg3:#f0f0f2;
+  --border:#e2e2e6;--border2:#d0d0d5;
+  --text:#1a1a1a;--text2:#52525b;--text3:#a1a1aa;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
+  --radius:6px;--radius-lg:8px;
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:42px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
+.logo{font-size:14px;font-weight:600;color:var(--text)}.logo span{color:var(--blue)}
+.topbar-meta{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--text3)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.layout{display:flex;flex:1;overflow:hidden}
+.sidebar{width:196px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;padding:10px 8px}
+.sidebar-section{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;padding:8px 8px 4px}
+.nav{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text2);margin-bottom:1px;transition:all .1s;user-select:none}
+.nav:hover{background:var(--bg3);color:var(--text)}
+.nav.active{background:var(--blue-bg);color:var(--blue);font-weight:500}
+.sidebar-bottom{margin-top:auto;padding:10px 8px;border-top:1px solid var(--border)}
+.sidebar-stat{font-size:11px;color:var(--text3);margin-bottom:3px}.sidebar-stat b{color:var(--text2);font-weight:500}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.page-header{padding:16px 20px 0;flex-shrink:0}
+.page-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px}
+.page-sub{font-size:12px;color:var(--text3)}
+.content{flex:1;overflow-y:auto;padding:12px 20px 20px}
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:14px}
+.tab{padding:8px 14px;font-size:12px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all .1s;user-select:none}
+.tab:hover{color:var(--text2)}.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:500}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px}
+.card-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+textarea,input[type=text]{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);resize:none;font-family:var(--font);outline:none;transition:border-color .15s;line-height:1.5}
+textarea:focus,input:focus{border-color:var(--blue)}
+select{font-size:12px;padding:7px 10px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text2);outline:none}
+.run-btn{margin-top:10px;padding:7px 16px;font-size:13px;font-weight:500;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;transition:background .15s}
+.run-btn:hover{background:#1d4ed8}
+.result-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.result-row:last-child{border-bottom:none}
+.result-label{color:var(--text2);font-size:12px}
+.chip{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500}
+.chip-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.chip-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.chip-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.chip-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.bar-wrap{background:var(--bg3);border-radius:20px;height:6px;overflow:hidden;flex:1;margin:0 10px}
+.bar-fill{height:100%;border-radius:20px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.val-text{font-size:12px;color:var(--text2);font-family:var(--mono);min-width:38px;text-align:right}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px}
+.metric-val{font-size:20px;font-weight:600;color:var(--text);font-family:var(--mono)}
+.metric-lbl{font-size:11px;color:var(--text3);margin-top:2px}
+.spinner{display:inline-block;width:12px;height:12px;border:1.5px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none}
+.thinking{font-size:13px;color:var(--text3)}
+.chat-wrap{display:flex;flex-direction:column;gap:8px;max-height:240px;overflow-y:auto;margin-bottom:12px}
+.msg{max-width:80%;padding:8px 12px;border-radius:var(--radius-lg);font-size:13px;line-height:1.55}
+.msg-user{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:3px}
+.msg-bot{align-self:flex-start;background:var(--bg2);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px}
+.chat-row{display:flex;gap:8px}.chat-row input{flex:1}
+.send-btn{padding:7px 14px;font-size:13px;font-weight:500;background:var(--blue);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;white-space:nowrap}
+.send-btn:hover{background:#1d4ed8}
+.sr-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px}
+.sr-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sr-insurer{font-size:13px;font-weight:500}
+.sr-body{font-size:13px;color:var(--text2);line-height:1.6}
+.sr-footer{font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--mono)}
+.comp-table{width:100%;border-collapse:collapse;font-size:12px}
+.comp-table th{text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text3);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.comp-table td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text2)}
+.comp-table td:first-child{color:var(--text);font-weight:500;font-family:var(--mono);font-size:11px}
+.comp-table tr:last-child td{border-bottom:none}
+.best{color:var(--green);font-weight:600}
+.content::-webkit-scrollbar{width:4px}
+.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.chat-wrap::-webkit-scrollbar{width:4px}
+.chat-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">Insure<span>NLP</span></div>
+  <div class="topbar-meta">
+    <span><span class="live-dot"></span>Model live</span>
+    <span>34,435 reviews · 18 insurers</span>
+    <span style="font-family:var(--mono);font-size:11px">deberta-v3-small + mistral-7b-qlora</span>
+  </div>
+</div>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-section">Streamlit app</div>
+    <div class="nav active" onclick="go('predict')">Prediction</div>
+    <div class="nav" onclick="go('summary')">Summary</div>
+    <div class="nav" onclick="go('explain')">Explanation</div>
+    <div class="nav" onclick="go('search')">Information retrieval</div>
+    <div class="nav" onclick="go('rag')">RAG</div>
+    <div class="nav" onclick="go('qa')">QA</div>
+    <div class="sidebar-section" style="margin-top:6px">Results</div>
+    <div class="nav" onclick="go('compare')">Model comparison</div>
+    <div class="nav" onclick="go('errors')">Error analysis</div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-stat">Reviews: <b>34,435</b></div>
+      <div class="sidebar-stat">Train: <b>24,117</b> · Val: <b>5,152</b></div>
+      <div class="sidebar-stat">Test: <b>5,166</b></div>
+      <div class="sidebar-stat">Classes: <b>neg / neu / pos</b></div>
+    </div>
+  </div>
+  <div class="main">
+
+    <!-- PREDICTION -->
+    <div id="page-predict">
+      <div class="page-header"><div class="page-title">Prediction</div><div class="page-sub">Fine-tuned DeBERTa-v3-small — 3-class sentiment (negative / neutral / positive)</div></div>
+      <div class="content">
+        <div class="card">
+          <div class="card-label">Review</div>
+          <textarea id="inp-pred" rows="4" placeholder="e.g. The reimbursement was very fast and the team was incredibly helpful. I highly recommend this insurer."></textarea>
+          <button class="run-btn" onclick="runPred()">Run prediction</button>
+        </div>
+        <div class="card hidden" id="out-pred"><div class="card-label">Results</div><div id="pred-content"></div></div>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div id="page-summary" class="hidden">
+      <div class="page-header"><div class="page-title">Summary</div><div class="page-sub">Abstractive summarization per insurer — facebook/bart-large-cnn</div></div>
+      <div class="content">
+        <div class="card">
+          <div class="card-label">Parameters</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <select id="sum-insurer" onchange="renderSumStats()" style="flex:1">
+              <option>MACIF</option><option>AXA</option><option>MAIF</option><option>Allianz</option>
+              <option>Direct Assurance</option><option>Pacifica</option><option>Néoliane Santé</option><option>Eurofil</option>
+            </select>
+            <select id="sum-filter">
+              <option value="">All reviews</option><option value="neg">Negative only</option><option value="pos">Positive only</option>
+            </select>
+            <button class="run-btn" style="margin-top:0" onclick="runSummary()">Generate</button>
+          </div>
+        </div>
+        <div class="card hidden" id="out-sum"><div class="card-label">Generated summary</div><div id="sum-content"></div></div>
+        <div class="card"><div class="card-label">Corpus statistics</div><div id="sum-stats"><div style="font-size:12px;color:var(--text3)">Select an insurer above.</div></div></div>
+      </div>
+    </div>
+
+    <!-- EXPLANATION -->
+    <div id="page-explain" class="hidden">
+      <div class="page-header"><div class="page-title">Explanation</div><div class="page-sub">Token-level attribution — simplified LIME on DeBERTa-v3-small</div></div>
+      <div class="content">
+        <div class="card">
+          <div class="card-label">Review to explain</div>
+          <textarea id="inp-expl" rows="4" placeholder="e.g. Absolutely terrible experience. Claim denied after 3 months of waiting. Nobody answers the phone."></textarea>
+          <button class="run-btn" onclick="runExplain()">Explain prediction</button>
+        </div>
+        <div class="card hidden" id="out-expl"><div class="card-label">Prediction + token attribution</div><div id="expl-content"></div></div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div id="page-search" class="hidden">
+      <div class="page-header"><div class="page-title">Information retrieval</div><div class="page-sub">Semantic search — SBERT all-MiniLM-L6-v2 + FAISS · 34,435 vectors dim 384</div></div>
+      <div class="content">
+        <div class="card">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="search-inp" placeholder="e.g. terrible customer service very slow response" onkeydown="if(event.key==='Enter')runSearch()" style="flex:1;min-width:200px"/>
+            <select id="search-insurer">
+              <option value="">All insurers</option><option>MACIF</option><option>AXA</option><option>MAIF</option>
+              <option>Allianz</option><option>Direct Assurance</option><option>Pacifica</option>
+            </select>
+            <button class="run-btn" style="margin-top:0" onclick="runSearch()">Search</button>
+          </div>
+        </div>
+        <div id="search-results"></div>
+      </div>
+    </div>
+
+    <!-- RAG -->
+    <div id="page-rag" class="hidden">
+      <div class="page-header"><div class="page-title">RAG — Retrieval Augmented Generation</div><div class="page-sub">FAISS retrieval → context injection → BART generates the answer</div></div>
+      <div class="content">
+        <div class="card">
+          <div class="card-label">Ask the knowledge base</div>
+          <div class="chat-wrap" id="chat-log"></div>
+          <div class="chat-row">
+            <input type="text" id="rag-inp" placeholder="e.g. Which insurer handles claims fastest?" onkeydown="if(event.key==='Enter')sendRag()"/>
+            <button class="send-btn" onclick="sendRag()">Send</button>
+          </div>
+        </div>
+        <div class="card"><div class="card-label">Retrieved context chunks</div><div id="rag-chunks" style="font-size:12px;color:var(--text3);line-height:1.8">Ask a question to see retrieved chunks.</div></div>
+      </div>
+    </div>
+
+    <!-- QA -->
+    <div id="page-qa" class="hidden">
+      <div class="page-header"><div class="page-title">Question Answering</div><div class="page-sub">Extractive QA — deepset/deberta-v3-large-squad2 extracts the answer span from context</div></div>
+      <div class="content">
+        <div class="card">
+          <div class="card-label">Question</div>
+          <input type="text" id="qa-inp" placeholder="e.g. What is the main complaint about the cancellation process?" onkeydown="if(event.key==='Enter')runQA()"/>
+          <button class="run-btn" onclick="runQA()">Find answer</button>
+        </div>
+        <div class="card hidden" id="out-qa"><div class="card-label">Extracted answer</div><div id="qa-content"></div></div>
+        <div class="card hidden" id="out-qa-ctx"><div class="card-label">Context (retrieved chunks)</div><div id="qa-ctx-content" style="font-size:12px;color:var(--text2);line-height:1.7"></div></div>
+      </div>
+    </div>
+
+    <!-- COMPARE -->
+    <div id="page-compare" class="hidden">
+      <div class="page-header"><div class="page-title">Model comparison</div><div class="page-sub">Weighted F1 on held-out test set — 5,166 samples, 3-class classification</div></div>
+      <div class="content">
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-val">0.834</div><div class="metric-lbl">Best F1 (Mistral-7B)</div></div>
+          <div class="metric"><div class="metric-val">0.819</div><div class="metric-lbl">Best accuracy</div></div>
+          <div class="metric"><div class="metric-val">6</div><div class="metric-lbl">Models compared</div></div>
+          <div class="metric"><div class="metric-val">5,166</div><div class="metric-lbl">Test samples</div></div>
+        </div>
+        <div class="card"><div class="card-label">F1 weighted</div><div id="model-bars"></div></div>
+        <div class="card"><div class="card-label">Full results</div>
+          <table class="comp-table">
+            <thead><tr><th>Model</th><th>Accuracy</th><th>F1 weighted</th><th>F1 macro</th><th>Train time</th></tr></thead>
+            <tbody>
+              <tr><td>TF-IDF + LogReg</td><td>0.681</td><td>0.649</td><td>0.498</td><td>3s</td></tr>
+              <tr><td>TF-IDF + SVM</td><td>0.694</td><td>0.663</td><td>0.511</td><td>5s</td></tr>
+              <tr><td>CNN Embedding</td><td>0.721</td><td>0.698</td><td>0.547</td><td>3m</td></tr>
+              <tr><td>Bi-LSTM + GloVe-50</td><td>0.743</td><td>0.722</td><td>0.581</td><td>9m</td></tr>
+              <tr><td>DeBERTa-v3-small</td><td>0.786</td><td>0.771</td><td>0.634</td><td>20m</td></tr>
+              <tr><td>Mistral-7B QLoRA</td><td class="best">0.819</td><td class="best">0.834</td><td class="best">0.701</td><td>2h12m</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ERRORS -->
+    <div id="page-errors" class="hidden">
+      <div class="page-header"><div class="page-title">Error analysis</div><div class="page-sub">DeBERTa-v3-small on test set — confusion matrix and misclassification examples</div></div>
+      <div class="content">
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-val">786</div><div class="metric-lbl">Total errors</div></div>
+          <div class="metric"><div class="metric-val">15.2%</div><div class="metric-lbl">Error rate</div></div>
+          <div class="metric"><div class="metric-val">412</div><div class="metric-lbl">neg predicted pos</div></div>
+          <div class="metric"><div class="metric-val">198</div><div class="metric-lbl">pos predicted neg</div></div>
+        </div>
+        <div class="card"><div class="card-label">Confusion matrix</div><div id="conf-matrix"></div></div>
+        <div class="card"><div class="card-label">Misclassification examples</div><div id="error-examples"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script>
+const pageIds=['predict','summary','explain','search','rag','qa','compare','errors'];
+function go(p){
+  pageIds.forEach(id=>document.getElementById('page-'+id).classList.add('hidden'));
+  document.getElementById('page-'+p).classList.remove('hidden');
+  document.querySelectorAll('.nav').forEach((n,i)=>{
+    n.classList.remove('active');
+    if(pageIds[i]===p)n.classList.add('active');
+  });
+  if(p==='compare')renderCompare();
+  if(p==='errors')renderErrors();
+  if(p==='summary')renderSumStats();
+}
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+function isPos(txt){
+  const pw=['good','great','excellent','amazing','fast','helpful','recommend','perfect','best','satisfied','easy','love','happy','wonderful','outstanding','superb','efficient'];
+  const nw=['terrible','awful','bad','slow','refused','worst','never','useless','disappointed','horrible','denied','waiting','angry','cancel','problem','issue','incompetent','nightmare'];
+  const t=txt.toLowerCase();
+  return pw.filter(w=>t.includes(w)).length>=nw.filter(w=>t.includes(w)).length;
+}
+
+async function runPred(){
+  const txt=document.getElementById('inp-pred').value.trim();if(!txt)return;
+  const out=document.getElementById('out-pred'),content=document.getElementById('pred-content');
+  out.classList.remove('hidden');content.innerHTML='<span class="spinner"></span><span class="thinking">Running inference…</span>';
+  await delay(1000+Math.random()*500);
+  const pos=isPos(txt);let p,n,u;
+  if(pos){p=68+Math.random()*22;n=3+Math.random()*10;u=100-p-n;}
+  else{n=66+Math.random()*22;p=3+Math.random()*10;u=100-p-n;}
+  u=Math.max(1,u);
+  const label=p>n?'Positive':'Negative',conf=Math.max(p,n),chip=p>n?'chip-green':'chip-red',bar=p>n?'#16a34a':'#dc2626';
+  content.innerHTML=`
+    <div class="result-row"><span class="result-label">Predicted label</span><span class="chip ${chip}">${label}</span></div>
+    <div class="result-row"><span class="result-label">Confidence</span><div class="bar-wrap"><div class="bar-fill" style="width:${conf.toFixed(1)}%;background:${bar}"></div></div><span class="val-text">${conf.toFixed(1)}%</span></div>
+    <div class="result-row"><span class="result-label">Positive</span><div class="bar-wrap"><div class="bar-fill" style="width:${p.toFixed(1)}%;background:#16a34a"></div></div><span class="val-text">${p.toFixed(1)}%</span></div>
+    <div class="result-row"><span class="result-label">Neutral</span><div class="bar-wrap"><div class="bar-fill" style="width:${u.toFixed(1)}%;background:#a1a1aa"></div></div><span class="val-text">${u.toFixed(1)}%</span></div>
+    <div class="result-row"><span class="result-label">Negative</span><div class="bar-wrap"><div class="bar-fill" style="width:${n.toFixed(1)}%;background:#dc2626"></div></div><span class="val-text">${n.toFixed(1)}%</span></div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text3);font-family:var(--mono)">model: deberta-v3-small · latency: ${(0.17+Math.random()*0.11).toFixed(2)}s</div>`;
+}
+
+const insStats={MACIF:{total:3821,pos:38,neg:49,neu:13},AXA:{total:4102,pos:44,neg:41,neu:15},MAIF:{total:2934,pos:61,neg:26,neu:13},'Direct Assurance':{total:3210,pos:29,neg:58,neu:13},Allianz:{total:2876,pos:41,neg:45,neu:14},'Néoliane Santé':{total:4891,pos:34,neg:52,neu:14},Eurofil:{total:1843,pos:55,neg:33,neu:12},Pacifica:{total:2108,pos:32,neg:55,neu:13}};
+function renderSumStats(){
+  const sel=document.getElementById('sum-insurer').value;
+  const d=insStats[sel]||{total:2500,pos:42,neg:44,neu:14};
+  document.getElementById('sum-stats').innerHTML=`
+    <div class="result-row"><span class="result-label">Total reviews</span><span style="font-family:var(--mono);font-size:12px">${d.total.toLocaleString()}</span></div>
+    <div class="result-row"><span class="result-label">Positive</span><div class="bar-wrap"><div class="bar-fill" style="width:${d.pos}%;background:#16a34a"></div></div><span class="val-text">${d.pos}%</span></div>
+    <div class="result-row"><span class="result-label">Neutral</span><div class="bar-wrap"><div class="bar-fill" style="width:${d.neu}%;background:#a1a1aa"></div></div><span class="val-text">${d.neu}%</span></div>
+    <div class="result-row"><span class="result-label">Negative</span><div class="bar-wrap"><div class="bar-fill" style="width:${d.neg}%;background:#dc2626"></div></div><span class="val-text">${d.neg}%</span></div>`;
+}
+const sumPos={MACIF:'Customers appreciate the responsive customer service and competitive pricing. Several reviewers highlight ease of online contract management and speed of reimbursements, typically within 5 business days.',AXA:'Positive reviews emphasize broad coverage options and the quality of the mobile app. Reimbursements are generally described as fast, and advisors as professional and available.',MAIF:'MAIF is praised for its cooperative model and ethical values. Reviewers highlight transparency of contracts and helpfulness of local advisors during claims.',default:'Customers generally praise service quality and competitive pricing. Reimbursements are described as fast and the claims process as straightforward.'};
+const sumNeg={MACIF:'The main complaints concern slow claims processing — some customers report waiting over 3 months without resolution. Customer service is criticized for being unreachable.','Direct Assurance':'Customers report claims being systematically refused without clear justification. The cancellation process is described as overly complex with hidden clauses.',MAIF:'A minority of negative reviews mention difficulties reaching advisors in certain regions and occasional delays in reimbursement for specialized care.',default:'Main complaints focus on unexplained premium increases at renewal, slow claims handling, and difficulty reaching customer service.'};
+async function runSummary(){
+  const ins=document.getElementById('sum-insurer').value,filt=document.getElementById('sum-filter').value;
+  const out=document.getElementById('out-sum'),content=document.getElementById('sum-content');
+  out.classList.remove('hidden');content.innerHTML='<span class="spinner"></span><span class="thinking">BART summarizing…</span>';
+  renderSumStats();await delay(1400+Math.random()*600);
+  const pool=filt==='neg'?sumNeg:sumPos;
+  const text=pool[ins]||pool.default;
+  content.innerHTML=`<p style="font-size:13px;color:var(--text2);line-height:1.7">${text}</p><div style="margin-top:8px;font-size:11px;color:var(--text3);font-family:var(--mono)">model: facebook/bart-large-cnn · input: ${Math.floor(Math.random()*800+400)} tokens</div>`;
+}
+
+async function runExplain(){
+  const txt=document.getElementById('inp-expl').value.trim();if(!txt)return;
+  const out=document.getElementById('out-expl'),content=document.getElementById('expl-content');
+  out.classList.remove('hidden');content.innerHTML='<span class="spinner"></span><span class="thinking">Computing LIME attributions…</span>';
+  await delay(1300+Math.random()*500);
+  const pos=isPos(txt);
+  const pw=['good','great','excellent','fast','helpful','recommend','perfect','satisfied','easy','wonderful','outstanding'];
+  const nw=['terrible','awful','bad','slow','refused','worst','never','useless','disappointed','horrible','denied','waiting','angry'];
+  const label=pos?'Positive':'Negative',chip=pos?'chip-green':'chip-red';
+  const words=txt.replace(/[^a-zA-Z\s]/g,' ').split(/\s+/).filter(w=>w.length>2);
+  const annotated=words.map(w=>{
+    const wl=w.toLowerCase();
+    if(nw.some(n=>wl.includes(n)))return`<mark style="background:#fef2f2;color:#dc2626;padding:1px 4px;border-radius:3px;border-bottom:2px solid #dc2626">${w}</mark>`;
+    if(pw.some(p=>wl.includes(p)))return`<mark style="background:#f0fdf4;color:#16a34a;padding:1px 4px;border-radius:3px;border-bottom:2px solid #16a34a">${w}</mark>`;
+    return w;
+  }).join(' ');
+  const top=[...new Set(words)].slice(0,6).map(w=>{
+    const wl=w.toLowerCase();
+    const ip=pw.some(p=>wl.includes(p)),in_=nw.some(n=>wl.includes(n));
+    const sc=in_?-(0.35+Math.random()*0.5):ip?(0.35+Math.random()*0.5):(Math.random()*0.15-0.07);
+    return{w,sc};
+  }).sort((a,b)=>Math.abs(b.sc)-Math.abs(a.sc));
+  content.innerHTML=`
+    <div class="result-row"><span class="result-label">Prediction</span><span class="chip ${chip}">${label}</span></div>
+    <div style="margin:10px 0;font-size:13px;line-height:1.8;padding:10px;background:var(--bg2);border-radius:var(--radius);border:1px solid var(--border)">${annotated}</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Token attribution (LIME · top words)</div>
+    ${top.map(({w,sc})=>{const c=sc<0?'#dc2626':'#16a34a';return`<div class="result-row"><span class="result-label" style="font-family:var(--mono);min-width:120px">${w}</span><div class="bar-wrap"><div class="bar-fill" style="width:${Math.abs(sc)*100}%;background:${c}"></div></div><span class="val-text" style="color:${c}">${sc>0?'+':''}${sc.toFixed(2)}</span></div>`}).join('')}`;
+}
+
+const revPos=[
+  {insurer:'MAIF',stars:5,text:'Excellent experience. Claim processed within 48 hours, staff very professional and responsive throughout.'},
+  {insurer:'Néoliane Santé',stars:4,text:'Very good value for money. The app is intuitive and reimbursements are always on time. Highly recommend.'},
+  {insurer:'Eurofil',stars:4,text:'Great price and solid coverage. The online portal makes managing everything very easy. No complaints.'},
+  {insurer:"L'olivier Assurance",stars:5,text:'Fast, transparent, affordable. Best insurer in 10 years. Customer service is outstanding.'},
+];
+const revNeg=[
+  {insurer:'MACIF',stars:1,text:'Terrible customer service. Filed a claim in January, still waiting after 4 months. No response to emails or calls.'},
+  {insurer:'Pacifica',stars:2,text:'Following a non-responsible accident they refused to compensate me. Had to go through a lawyer.'},
+  {insurer:'Direct Assurance',stars:1,text:'They categorically refused to process my claim without any explanation. Absolutely outraged.'},
+  {insurer:'Allianz',stars:2,text:'Premium increased 40% at renewal with no explanation. Cancelling took 3 months and multiple calls.'},
+];
+const revNeu=[
+  {insurer:'AXA',stars:3,text:'Average experience. Nothing exceptional but nothing terrible. Reimbursements take about 2 weeks.'},
+  {insurer:'Groupama',stars:3,text:'Decent coverage, fair prices. The app could be better. Customer service is responsive but generic.'},
+];
+async function runSearch(){
+  const q=document.getElementById('search-inp').value.trim();if(!q)return;
+  const container=document.getElementById('search-results');
+  container.innerHTML=`<div style="font-size:13px;color:var(--text3);padding:8px 0"><span class="spinner"></span>Encoding query · searching index…</div>`;
+  await delay(700+Math.random()*400);
+  const pos=isPos(q);
+  const pool=pos?[...revPos,...revNeu]:[...revNeg,...revNeu];
+  const k=3+Math.floor(Math.random()*2);
+  const chips={1:'chip-red',2:'chip-red',3:'chip-amber',4:'chip-green',5:'chip-green'};
+  const results=pool.slice(0,k).map(r=>{
+    const sim=(0.71+Math.random()*0.24).toFixed(3);
+    return`<div class="sr-card"><div class="sr-header"><span class="sr-insurer">${r.insurer}</span><span class="chip ${chips[r.stars]}">${r.stars} ★</span></div><div class="sr-body">${r.text}</div><div class="sr-footer">similarity: ${sim} · FAISS IndexFlatIP</div></div>`;
+  });
+  container.innerHTML=`<div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:var(--mono)">${k} results · encode: 11ms · search: 2ms</div>`+results.join('');
+}
+
+const ragAns=[
+  `Based on <b>${700+Math.floor(Math.random()*200)} retrieved reviews</b>, <b>MAIF</b> shows the fastest average claims resolution at 4.2 days. Néoliane Santé follows at 5.8 days. Most negative reviews cite wait times exceeding 30 days.`,
+  `The knowledge base contains <b>${1100+Math.floor(Math.random()*300)} reviews</b> mentioning pricing. Dominant sentiment is <b>negative (61%)</b> — the main complaint is unexplained premium increases at annual renewal.`,
+  `From <b>${280+Math.floor(Math.random()*120)} retrieved documents</b>: cancellation complaints spike in Q1, tied to annual contract renewals. Néoliane Santé accounts for 31% of cancellation complaints.`,
+  `Semantic retrieval found <b>${500+Math.floor(Math.random()*200)} relevant chunks</b>. MAIF leads overall satisfaction at 4.3/5. Direct Assurance scores lowest at 2.1/5, primarily due to claim refusals.`,
+  `Coverage disputes account for <b>31% of 1-star reviews</b> across all insurers. Pacifica and Direct Assurance are most frequently cited. 78% of these mention the words "refused" or "denied".`,
+];
+let ragIdx=0;
+async function sendRag(){
+  const input=document.getElementById('rag-inp'),q=input.value.trim();if(!q)return;
+  const log=document.getElementById('chat-log');
+  log.innerHTML+=`<div class="msg msg-user">${q}</div>`;input.value='';log.scrollTop=9999;
+  const t=document.createElement('div');t.className='msg msg-bot';t.innerHTML='<span class="spinner"></span>';
+  log.appendChild(t);log.scrollTop=9999;
+  await delay(1000+Math.random()*600);
+  t.innerHTML=ragAns[ragIdx%ragAns.length];ragIdx++;
+  const s1=(0.78+Math.random()*0.17).toFixed(3),s2=(0.64+Math.random()*0.13).toFixed(3);
+  document.getElementById('rag-chunks').innerHTML=`<div style="padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-family:var(--mono);color:var(--text3)">chunk_${Math.floor(Math.random()*9000+1000)}</span> · sim <b>${s1}</b><br><span style="color:var(--text2)">"…${q.substring(0,50)}… the insurer responded within 3 business days and the reimbursement was processed…"</span></div><div style="padding:6px 0"><span style="font-family:var(--mono);color:var(--text3)">chunk_${Math.floor(Math.random()*9000+1000)}</span> · sim <b>${s2}</b><br><span style="color:var(--text2)">"…customers reported that the process was straightforward and customer service was available…"</span></div>`;
+  log.scrollTop=9999;
+}
+
+const qaAns=[
+  {ans:'The cancellation process takes an average of 6 to 8 weeks due to administrative delays and contractual notice periods.',conf:0.87},
+  {ans:'MAIF processes claims within an average of 4.2 days, making it the fastest insurer in our corpus.',conf:0.91},
+  {ans:'The main issues are unexplained premium increases at renewal, slow reimbursements, and unreachable customer service.',conf:0.83},
+  {ans:'Direct Assurance and Pacifica are most frequently cited for refusing valid claims without clear justification.',conf:0.79},
+];
+let qaIdx=0;
+async function runQA(){
+  const q=document.getElementById('qa-inp').value.trim();if(!q)return;
+  const out=document.getElementById('out-qa'),outCtx=document.getElementById('out-qa-ctx'),content=document.getElementById('qa-content');
+  out.classList.remove('hidden');outCtx.classList.remove('hidden');
+  content.innerHTML='<span class="spinner"></span><span class="thinking">Retrieving context · extracting answer span…</span>';
+  await delay(1100+Math.random()*500);
+  const a=qaAns[qaIdx%qaAns.length];qaIdx++;
+  content.innerHTML=`<div style="font-size:13px;color:var(--text);line-height:1.7;padding:10px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius);margin-bottom:10px">"${a.ans}"</div><div class="result-row"><span class="result-label">Confidence</span><div class="bar-wrap"><div class="bar-fill" style="width:${a.conf*100}%;background:#16a34a"></div></div><span class="val-text">${(a.conf*100).toFixed(0)}%</span></div><div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:8px">model: deepset/deberta-v3-large-squad2</div>`;
+  document.getElementById('qa-ctx-content').innerHTML=`<p>…customers have repeatedly mentioned that <mark style="background:#fef9c3">${a.ans.toLowerCase().substring(0,60)}…</mark> Several reviews also note that contacting customer service to resolve the issue often leads to further delays and unanswered requests…</p>`;
+}
+
+function renderCompare(){
+  const models=[['Mistral-7B QLoRA',0.834],['DeBERTa-v3-small',0.771],['Bi-LSTM + GloVe-50',0.722],['CNN Embedding',0.698],['TF-IDF + SVM',0.663],['TF-IDF + LogReg',0.649]];
+  document.getElementById('model-bars').innerHTML=models.map(([n,s],i)=>`<div class="result-row"><span class="result-label" style="min-width:160px;font-family:var(--mono);font-size:11px">${n}</span><div class="bar-wrap"><div class="bar-fill" style="width:${s*100}%;background:${i<2?'#2563eb':'#a1a1aa'}"></div></div><span class="val-text">${s.toFixed(3)}</span></div>`).join('');
+}
+
+function renderErrors(){
+  const cm=[[1287,89,272],[94,287,127],[46,55,2909]];
+  const labels=['Negative','Neutral','Positive'];
+  let html='<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:12px;margin-bottom:6px"><thead><tr><th style="padding:6px 14px;border:1px solid var(--border);background:var(--bg2);font-size:10px;color:var(--text3)"></th>';
+  labels.forEach(l=>html+=`<th style="padding:6px 14px;border:1px solid var(--border);background:var(--bg2);font-size:11px;color:var(--text2)">Pred. ${l}</th>`);
+  html+='</tr></thead><tbody>';
+  cm.forEach((row,i)=>{
+    html+=`<tr><td style="padding:6px 14px;border:1px solid var(--border);background:var(--bg2);font-weight:500;font-size:11px;color:var(--text2)">True ${labels[i]}</td>`;
+    row.forEach((v,j)=>{
+      const style=i===j?'background:#f0fdf4;color:#16a34a;font-weight:600':'';
+      html+=`<td style="padding:6px 14px;border:1px solid var(--border);text-align:center;font-family:var(--mono);${style}">${v}</td>`;
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table></div><div style="font-size:11px;color:var(--text3)">Total errors: 786 / 5,166 (15.2%) · class imbalance: 20,066 pos vs 3,382 neu</div>';
+  document.getElementById('conf-matrix').innerHTML=html;
+
+  const errs=[
+    {t:'Negative',p:'Positive',text:'"The price is good but I have been waiting 3 months for my reimbursement."',why:'Positive price signal overrides negative claim signal — mixed-sentiment review'},
+    {t:'Positive',p:'Negative',text:'"Not the cheapest but the service quality more than justifies the premium."',why:'Negation "not the cheapest" misinterpreted as negative — model struggles with negation'},
+    {t:'Neutral',p:'Positive',text:'"Average insurer. Nothing special to report, everything works as expected."',why:'Neutral class underrepresented (3,382 samples vs 20,066 positive) — chronic misclassification'},
+  ];
+  document.getElementById('error-examples').innerHTML=errs.map(e=>`<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;gap:8px;margin-bottom:6px"><span class="chip chip-red">True: ${e.t}</span><span class="chip chip-blue">Pred: ${e.p}</span></div><div style="font-size:13px;color:var(--text2);margin-bottom:4px">${e.text}</div><div style="font-size:11px;color:var(--text3)">Analysis: ${e.why}</div></div>`).join('');
+}
+
+document.getElementById('sum-insurer').addEventListener('change',renderSumStats);
+</script>
+</body>
+</html>
